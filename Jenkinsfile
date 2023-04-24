@@ -1,32 +1,45 @@
 pipeline {
     agent  any;
     stages {
+	stage('Comprobaciones') {
+	    steps {
+		sh 'whoami'
+	    }
+	}
+        stage('Preparing the environment') {
+	    steps {
+		sh 'python -m pip install -r requirements.text'
+	    }
         stage('Calidad de código') {
             steps {
-                sh 'echo checking la calidad del código'
+                sh 'python -m pylint app.py'
             }
         }
         stage('Test Unitario') {
             steps {
-                sh 'echo comprobando la aplicación'
+                sh 'python -m pytest'
             }
         }
         stage('Build') {
-            steps {
+            agent {
+		node {
+		   label "DockerServer";
+		}
                 sh 'echo creando paquete de aplicación'
             }
+	    steps {
+		sh 'docker build https://github.com/Atari96/MisCodigos.git -t MisCodigos:latest'
+	    }
         }
-   
-    stage('Entrega') {
-          
-          steps {
-              sh 'echo realizando la entrega de software'
-          }
-      }        
+     
       stage('Deploy') {
-          
+   	  agent {
+		node{
+                   label "DockerServer";
+		}
+	  }       
           steps {
-              sh 'echo desplegando'
+              sh 'docker run -tdi -p 5000:5000 MisCodigos:latest'
           }
       }
     
