@@ -25,7 +25,7 @@ pipeline {
 		node {
 		   label "DockerServer";
 		}
-                sh 'echo creando paquete de aplicación'
+                sh 'echo creando paquete de aplicación ...'
             }
 	    steps {
 		sh 'docker build https://github.com/Atari96/MisCodigos.git -t MisCodigos:latest'
