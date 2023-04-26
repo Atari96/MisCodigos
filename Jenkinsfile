@@ -1,47 +1,70 @@
 pipeline {
-    agent  any;
+    agent any
     stages {
-	stage('Comprobaciones') {
-	    steps {
-		sh 'whoami'
-	    }
-	}
-        stage('Preparing the environment') {
-	    steps {
-		sh 'python -m pip install -r requirements.text'
-	    }
+
+        stage('Preparando el entorno') {
+            agent { 
+            node{
+              label "objetivo1"; 
+              }
+          }
+            steps {
+                sh 'whoami'
+                sh 'echo POR FAVOR !!!!!! fijaos en este dato'
+                sh 'hostname'
+                sh 'python3 -m pip install -r requirements.txt'
+            }
+        }
         stage('Calidad de código') {
-            steps {
-                sh 'python -m pylint app.py'
-            }
-        }
-        stage('Test Unitario') {
-            steps {
-                sh 'python -m pytest'
-            }
-        }
-        stage('Build') {
             agent {
-		node {
-		   label "DockerServer";
-		}
-                sh 'echo creando paquete de aplicación ...'
+                node {
+                    label "objetivo1";
+                }
             }
-	    steps {
-		sh 'docker build https://github.com/Atari96/MisCodigos.git -t MisCodigos:latest'
-	    }
+            steps {
+                 sh 'whoami'
+                sh 'hostname'
+                sh 'python3 -m pylint app.py'
+            }
         }
-     
-      stage('Deploy') {
-   	  agent {
-		node{
-                   label "DockerServer";
-		}
-	  }       
+        stage('Tests') {
+             agent {
+                node {
+                    label "objetivo1";
+                }
+            }           
+            steps {
+                sh 'whoami'
+                sh 'hostname'
+                sh 'python3 -m pytest'
+            }
+        }
+   
+    stage('construcción del artefacto') {
+          agent { 
+            node{
+              label "objetivo2"; 
+              }
+          }
           steps {
-              sh 'docker run -tdi -p 5000:5000 MisCodigos:latest'
+              sh 'whoami'
+              sh 'hostname'
+              sh 'docker build https://github.com/richiinstructor/jenkins.git#main -t richijenkins:latest'
+          }
+      }        
+      stage('Despliegue') {
+          agent { 
+            node{
+              label "objetivo2"; 
+              }
+          }
+          steps {
+              sh 'whoami'
+              sh ' echo si el dato anterior es root ... NOS HEMOS VUELTO LOCOS Y VAMOS A MORIR TODOS!!!!!!'
+              sh 'hostname'
+              sh 'docker run --name richiapp -tdi -p 5000:5000 richijenkins:latest'
           }
       }
-    
-	}
+    }
+
 }
